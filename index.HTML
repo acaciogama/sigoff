@@ -637,48 +637,49 @@
 
 
         function dispararImp(id, tipo) {
-        const tx = db.transaction("cards", "readwrite");
-        const store = tx.objectStore("cards");
+    const tx = db.transaction("cards", "readwrite");
+    const store = tx.objectStore("cards");
+    
+    store.get(id).onsuccess = e => {
+        const c = e.target.result;
+        if (!c || !c.f1 || !c.f2) return alert("Erro: Card sem fotos!");
         
-        store.get(id).onsuccess = e => {
-            const c = e.target.result;
-            if (!c || !c.f1 || !c.f2) return alert("Erro: Card sem fotos!");
-            
-            const getF = (f) => (f instanceof FileList && f.length > 0) ? f[0] : f;
-            const u1 = URL.createObjectURL(getF(c.f1));
-            const u2 = URL.createObjectURL(getF(c.f2));
-            
-            const win = window.open("", "_blank");
-            
-            // SIGA: Foto 1 no final da folha 1 | Foto 2 no topo da folha 2
-            // SEADES: Mantém o padrão anterior de 9x12cm
-            let css = (tipo === 'SIGA') 
-                ? `.page { width: 210mm; height: 297mm; position: relative; page-break-after: always; } 
-                   .img-card { width: 15cm; height: 10cm; position: absolute; left: 50%; transform: translateX(-50%); border: 1px solid #000; object-fit: cover; }
-                   .pos-final { bottom: 1cm; } 
-                   .pos-topo { top: 1cm; }` 
-                : `.page { width: 210mm; height: 297mm; position: relative; } 
-                   .img-card { width: 12cm; height: 9cm; position: absolute; left: 50%; transform: translateX(-50%); border: 1px solid #000; object-fit: cover; }
-                   .f1 { top: 3cm; } 
-                   .f2 { top: 13cm; }`;
-            
-            let html = (tipo === 'SIGA') 
-                ? `<div class="page"><img src="${u1}" class="img-card pos-final"></div>
-                   <div class="page"><img src="${u2}" class="img-card pos-topo"></div>` 
-                : `<div class="page">
-                       <img src="${u1}" class="img-card f1">
-                       <img src="${u2}" class="img-card f2">
-                   </div>`;
-            
-            win.document.write(`<html><head><style>@page { size: A4; margin: 0; } body { margin: 0; } ${css}</style></head>
-                <body>${html}<script>window.onload=()=>{setTimeout(()=>{window.print();window.close();},1200);};<\/script></body></html>`);
-            win.document.close();
-            
-            c.impresso = true;
-            store.put(c);
-            tx.oncomplete = () => { fecharModal(); render(); };
-        };
-    }
+        const getF = (f) => (f instanceof FileList && f.length > 0) ? f[0] : f;
+        const u1 = URL.createObjectURL(getF(c.f1));
+        const u2 = URL.createObjectURL(getF(c.f2));
+        
+        const win = window.open("", "_blank");
+        
+        // MODO SIGA: .pos-topo alterado para 4cm
+        let css = (tipo === 'SIGA') 
+            ? `.page { width: 210mm; height: 297mm; position: relative; page-break-after: always; } 
+               .img-card { width: 15cm; height: 10cm; position: absolute; left: 50%; transform: translateX(-50%); border: 1px solid #000; object-fit: cover; }
+               .pos-final { bottom: 1cm; } 
+               .pos-topo { top: 4cm; }` // <--- ALTERADO PARA 4CM
+            : `.page { width: 210mm; height: 297mm; position: relative; } 
+               .img-card { width: 12cm; height: 9cm; position: absolute; left: 50%; transform: translateX(-50%); border: 1px solid #000; object-fit: cover; }
+               .f1 { top: 3cm; } 
+               .f2 { top: 13cm; }`;
+        
+        let html = (tipo === 'SIGA') 
+            ? `<div class="page"><img src="${u1}" class="img-card pos-final"></div>
+               <div class="page"><img src="${u2}" class="img-card pos-topo"></div>` 
+            : `<div class="page">
+                   <img src="${u1}" class="img-card f1">
+                   <img src="${u2}" class="img-card f2">
+               </div>`;
+        
+        win.document.write(`<html><head><style>@page { size: A4; margin: 0; } body { margin: 0; } ${css}</style></head>
+            <body>${html}<script>window.onload=()=>{setTimeout(()=>{window.print();window.close();},1200);};<\/script></body></html>`);
+        win.document.close();
+        
+        // Marca como impresso e salva
+        c.impresso = true;
+        store.put(c);
+        tx.oncomplete = () => { fecharModal(); render(); };
+    };
+}
+
 
     function validarCPF(cpf) {
     cpf = cpf.replace(/\D/g, '');
