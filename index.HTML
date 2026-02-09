@@ -798,7 +798,7 @@ async function exportarBackup(comFotos) {
         // MODO SIGA: .pos-topo alterado para 4cm
         let css = (tipo === 'SIGA') 
             ? `.page { width: 210mm; height: 297mm; position: relative; page-break-after: always; } 
-               .img-card { width: 16cm; height: 11cm; position: absolute; left: 50%; transform: translateX(-50%); border: 1px solid #000; object-fit: cover; }
+               .img-card { width: 15cm; height: 10cm; position: absolute; left: 50%; transform: translateX(-50%); border: 1px solid #000; object-fit: cover; }
                .pos-final { bottom: 4cm; } 
                .pos-topo { top: 4cm; }` // <--- ALTERADO PARA 4CM
             : `.page { width: 210mm; height: 297mm; position: relative; } 
@@ -895,5 +895,6 @@ function abrirPdf(id) {
 </body>
 
 </html>
+
 
 
