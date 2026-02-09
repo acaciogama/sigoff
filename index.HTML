@@ -31,7 +31,7 @@
         .tab-btn { padding: 12px 15px; border: none; background: #ddd; color: #555; cursor: pointer; border-radius: 8px 8px 0 0; font-weight: bold; font-size: 11px; }
         .tab-btn.active { background: var(--panel); color: var(--primary); border-top: 4px solid var(--primary); }
         .count-badge { background: #555; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 5px; }
-        #previewModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; overflow-y: auto; }
+         #previewModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; overflow-y: auto; }
         .modal-body { width: 90%; max-width: 700px; margin: 50px auto; background: var(--panel); padding: 30px; border-radius: 12px; text-align: center; }
         .filter-options { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; background: #eee; padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #000; }
     </style>
@@ -46,7 +46,7 @@
             <input type="text" id="novoMun" placeholder="NOME DO NOVO MUNICÍPIO..." style="text-align: center; margin-bottom: 15px;">
             <button class="btn btn-green" style="width: 100%;" onclick="criarM()">ADICIONAR MUNICÍPIO</button>
             <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
-                <button class="btn btn-cyan" onclick="exportarBackup()">💾 BACKUP</button>
+                <button class="btn btn-cyan" onclick="abrirOpcoesBackup()">💾 BACKUP</button>
                 <button class="btn btn-green" onclick="document.getElementById('fB').click()">📥 RESTAURAR</button>
                 <input type="file" id="fB" style="display:none" onchange="importarBackup(this)">
             </div>
@@ -70,7 +70,8 @@
                     <button class="btn btn-red" onclick="abrirRelatorio()">📊 RELATÓRIO CSV</button>
                 </div>
             </div>
-                <div class="grid-inputs">
+            
+            <div class="grid-inputs">
                 <input type="text" id="addN" placeholder="NOME COMPLETO *">
                 <input type="text" id="addC" placeholder="CPF *" oninput="handleCPF(this)" maxlength="14">
                 <input type="text" id="addCom" placeholder="COMUNIDADE">
@@ -78,6 +79,11 @@
                 <input type="text" id="addT" placeholder="TELEFONE">
                 <input type="text" id="addG" placeholder="GPS">
                 <input type="text" id="addNIS" placeholder="NIS">
+                
+                <!-- NOVAS DATAS COM MÁSCARA -->
+                <input type="text" id="addDtEx1" placeholder="DATA INICIO" oninput="handleData(this)" maxlength="10">
+                <input type="text" id="addDtEx2" placeholder="DATA FIM" oninput="handleData(this)" maxlength="10">
+                
                 <input type="text" id="addPed" placeholder="NOME PEDREIRO">
                 <input type="text" id="addPedC" placeholder="CPF PEDREIRO" oninput="handleCPF(this)" maxlength="14">
                 <div style="display: flex; align-items: center; gap: 5px; background: #eee; padding: 10px; border-radius: 6px;">
@@ -92,37 +98,37 @@
                 <input type="text" id="inputBusca" placeholder="🔍 PESQUISAR POR NOME, CPF, PLACA OU COMUNIDADE..." oninput="render()">
             </div>
 
-                    <div id="abasFisico" class="tabs">
-            <!-- ABA GERAL ADICIONADA COMO PRIMEIRA -->
-            <button class="tab-btn active" id="tabG" onclick="setTab('G')">GERAL <span class="count-badge" id="cG">0</span></button>
-            
-            <button class="tab-btn" id="tabP" onclick="setTab('P')">PENDENTES <span class="count-badge" id="cP">0</span></button>
-            <button class="tab-btn" id="tabF" onclick="setTab('F')">COM FOTOS <span class="count-badge" id="cF">0</span></button>
-            <button class="tab-btn" id="tabI" onclick="setTab('I')">IMPRESSOS <span class="count-badge" id="cI">0</span></button>
-            <button class="tab-btn" id="tabCC" onclick="setTab('CC')">COM CURSO <span class="count-badge" id="cCC">0</span></button>
-            <button class="tab-btn" id="tabSC" onclick="setTab('SC')">SEM CURSO <span class="count-badge" id="cSC">0</span></button>
-            <button class="tab-btn" id="tabL" onclick="setTab('L')">LIXEIRA <span class="count-badge" id="cL">0</span></button>
-            <button class="btn btn-red" id="btnEsvaziarLixeira" style="display:none; margin-left:10px; font-size:9px" onclick="esvaziarLixeiraPermanente()">☢️ ESVAZIAR LIXEIRA</button>
-            
-            <select id="ordenarPor" onchange="render()" style="width: 180px; margin-left: auto; height: 35px; font-size: 11px;">
-                <option value="nome">ORDEM: NOME</option>
-                <option value="cpf">ORDEM: CPF</option>
-                <option value="com">ORDEM: COMUNIDADE</option>
-                <option value="timestamp">ORDEM: CADASTRO</option>
-            </select>
-        </div>
+            <div id="abasFisico" class="tabs">
+                <button class="tab-btn active" id="tabG" onclick="setTab('G')">GERAL <span class="count-badge" id="cG">0</span></button>
+                <button class="tab-btn" id="tabP" onclick="setTab('P')">PENDENTES <span class="count-badge" id="cP">0</span></button>
+                <button class="tab-btn" id="tabF" onclick="setTab('F')">COM FOTOS <span class="count-badge" id="cF">0</span></button>
+                <button class="tab-btn" id="tabI" onclick="setTab('I')">IMPRESSOS <span class="count-badge" id="cI">0</span></button>
+                <button class="tab-btn" id="tabCC" onclick="setTab('CC')">COM CURSO <span class="count-badge" id="cCC">0</span></button>
+                <button class="tab-btn" id="tabSC" onclick="setTab('SC')">SEM CURSO <span class="count-badge" id="cSC">0</span></button>
+                <button class="tab-btn" id="tabL" onclick="setTab('L')">LIXEIRA <span class="count-badge" id="cL">0</span></button>
+                <button class="btn btn-red" id="btnEsvaziarLixeira" style="display:none; margin-left:10px; font-size:9px" onclick="esvaziarLixeiraPermanente()">☢️ ESVAZIAR LIXEIRA</button>
+                
+                <select id="ordenarPor" onchange="render()" style="width: 180px; margin-left: auto; height: 35px; font-size: 11px;">
+                    <option value="nome">ORDEM: NOME</option>
+                    <option value="cpf">ORDEM: CPF</option>
+                    <option value="com">ORDEM: COMUNIDADE</option>
+                    <option value="timestamp">ORDEM: CADASTRO</option>
+                </select>
+            </div>
 
-
-        <div id="abasFinan" class="tabs" style="display:none">
-            <button class="tab-btn" id="tabFP" onclick="setTab('FP')">FAM. PAGAS <span class="count-badge" id="cFP">0</span></button>
-            <button class="tab-btn" id="tabFA" onclick="setTab('FA')">FAM. A PAGAR <span class="count-badge" id="cFA">0</span></button>
-            <button class="tab-btn" id="tabPP" onclick="setTab('PP')">PEDR. PAGOS <span class="count-badge" id="cPP">0</span></button>
-            <button class="tab-btn" id="tabPA" onclick="setTab('PA')">PEDR. A PAGAR <span class="count-badge" id="cPA">0</span></button>
+            <div id="abasFinan" class="tabs" style="display:none">
+                <button class="tab-btn" id="tabFP" onclick="setTab('FP')">FAM. PAGAS <span class="count-badge" id="cFP">0</span></button>
+                <button class="tab-btn" id="tabFA" onclick="setTab('FA')">FAM. A PAGAR <span class="count-badge" id="cFA">0</span></button>
+                <button class="tab-btn" id="tabPP" onclick="setTab('PP')">PEDR. PAGOS <span class="count-badge" id="cPP">0</span></button>
+                <button class="tab-btn" id="tabPA" onclick="setTab('PA')">PEDR. A PAGAR <span class="count-badge" id="cPA">0</span></button>
+            </div>
+            
+            <div id="lista" style="margin-top: 15px;"></div>
         </div>
-        <div id="lista" style="margin-top: 15px;"></div>
     </div>
-</div>
+</div> <!-- FECHAMENTO DA TELA PRINCIPAL AQUI -->
 
+<!-- O PREVIEW MODAL AGORA ESTÁ FORA DE TODAS AS TELAS -->
 <div id="previewModal">
     <div class="modal-body">
         <h2 id="modalTit">OPÇÕES</h2>
@@ -133,6 +139,7 @@
         </div>
     </div>
 </div>
+
 
 <script>
     let db, muniAtual = null, aba = 'P', aberto = null, modoEdicao = null, vistaFin = false;
@@ -249,120 +256,127 @@
 
 
 
-                function render() {
-        document.getElementById('btnEsvaziarLixeira').style.display = (aba === 'L' && !vistaFin) ? 'inline-flex' : 'none';   
-        const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
-        const cont = document.getElementById('lista'); 
-        cont.innerHTML = "";
-        const busca = document.getElementById('inputBusca').value.toUpperCase().trim();
-        const ord = document.getElementById('ordenarPor').value;
+        function render() {
+    document.getElementById('btnEsvaziarLixeira').style.display = (aba === 'L' && !vistaFin) ? 'inline-flex' : 'none';   
+    const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
+    const cont = document.getElementById('lista'); 
+    cont.innerHTML = "";
+    const busca = document.getElementById('inputBusca').value.toUpperCase().trim();
+    const ord = document.getElementById('ordenarPor').value;
 
-        db.transaction("cards").objectStore("cards").getAll().onsuccess = e => {
-            let cards = e.target.result.filter(c => c.muni === muniAtual);
+    db.transaction("cards").objectStore("cards").getAll().onsuccess = e => {
+        let cards = e.target.result.filter(c => c.muni === muniAtual);
+        
+        if (busca) {
+            cards = cards.filter(c => 
+                (c.nome && c.nome.toUpperCase().includes(busca)) || 
+                (c.cpf && c.cpf.includes(busca)) || 
+                (c.com && c.com.toUpperCase().includes(busca)) || 
+                (c.placa && c.placa.toUpperCase().includes(busca))
+            );
+        }
+
+        // Atualização dos Contadores
+        document.getElementById('cG').innerText = cards.filter(c => !c.lixeira).length;
+        document.getElementById('cP').innerText = cards.filter(c => (!c.f1 || !c.f2) && !c.impresso && !c.lixeira).length;
+        document.getElementById('cF').innerText = cards.filter(c => c.f1 && c.f2 && !c.impresso && !c.lixeira).length;
+        document.getElementById('cI').innerText = cards.filter(c => c.impresso && !c.lixeira).length;
+        document.getElementById('cCC').innerText = cards.filter(c => c.curso && !c.lixeira).length; 
+        document.getElementById('cSC').innerText = cards.filter(c => !c.curso && !c.lixeira).length; 
+        document.getElementById('cL').innerText = cards.filter(c => c.lixeira).length;
+        document.getElementById('cFP').innerText = cards.filter(c => c.paga && !c.lixeira).length;
+        document.getElementById('cFA').innerText = cards.filter(c => !c.paga && !c.lixeira).length;
+        document.getElementById('cPP').innerText = cards.filter(c => c.pedPaga && !c.lixeira).length;
+        document.getElementById('cPA').innerText = cards.filter(c => !c.pedPaga && !c.lixeira).length;
+
+        cards.sort((a,b) => (ord === 'timestamp') ? a.timestamp - b.timestamp : (a[ord]||"").toString().localeCompare((b[ord]||"").toString()));
+
+        let idx = 1;
+        cards.forEach(c => {
+            const temF = c.f1 && c.f2;
+            let vis = false;
             
-            if (busca) {
-                cards = cards.filter(c => 
-                    (c.nome && c.nome.toUpperCase().includes(busca)) || 
-                    (c.cpf && c.cpf.includes(busca)) || 
-                    (c.com && c.com.toUpperCase().includes(busca)) || 
-                    (c.placa && c.placa.toUpperCase().includes(busca))
+            if(!vistaFin) {
+                vis = (aba==='G' && !c.lixeira) || 
+                      (aba==='P' && !temF && !c.impresso && !c.lixeira) || 
+                      (aba==='F' && temF && !c.impresso && !c.lixeira) || 
+                      (aba==='I' && c.impresso && !c.lixeira) || 
+                      (aba==='CC' && c.curso && !c.lixeira) ||  
+                      (aba==='SC' && !c.curso && !c.lixeira) || 
+                      (aba==='L' && c.lixeira);
+            } else {
+                vis = !c.lixeira && (
+                    (aba==='FP' && c.paga) || (aba==='FA' && !c.paga) || 
+                    (aba==='PP' && c.pedPaga) || (aba==='PA' && !c.pedPaga)
                 );
             }
-
-            // Atualização dos Contadores (Incluindo GERAL e Curso)
-            document.getElementById('cG').innerText = cards.filter(c => !c.lixeira).length; // ABA GERAL
-            document.getElementById('cP').innerText = cards.filter(c => (!c.f1 || !c.f2) && !c.impresso && !c.lixeira).length;
-            document.getElementById('cF').innerText = cards.filter(c => c.f1 && c.f2 && !c.impresso && !c.lixeira).length;
-            document.getElementById('cI').innerText = cards.filter(c => c.impresso && !c.lixeira).length;
-            document.getElementById('cCC').innerText = cards.filter(c => c.curso && !c.lixeira).length; 
-            document.getElementById('cSC').innerText = cards.filter(c => !c.curso && !c.lixeira).length; 
-            document.getElementById('cL').innerText = cards.filter(c => c.lixeira).length;
-            document.getElementById('cFP').innerText = cards.filter(c => c.paga && !c.lixeira).length;
-            document.getElementById('cFA').innerText = cards.filter(c => !c.paga && !c.lixeira).length;
-            document.getElementById('cPP').innerText = cards.filter(c => c.pedPaga && !c.lixeira).length;
-            document.getElementById('cPA').innerText = cards.filter(c => !c.pedPaga && !c.lixeira).length;
-
-            cards.sort((a,b) => (ord === 'timestamp') ? a.timestamp - b.timestamp : (a[ord]||"").toString().localeCompare((b[ord]||"").toString()));
-
-            let idx = 1;
-            cards.forEach(c => {
-                const temF = c.f1 && c.f2;
-                let vis = false;
+            
+            if(vis) {
+                const isEd = modoEdicao === c.cpf; 
+                const d = document.createElement('div'); 
+                d.className = `person-item ${aberto === c.cpf ? 'open' : ''}`;
                 
-                if(!vistaFin) {
-                    vis = (aba==='G' && !c.lixeira) || // VISUALIZAÇÃO GERAL
-                          (aba==='P' && !temF && !c.impresso && !c.lixeira) || 
-                          (aba==='F' && temF && !c.impresso && !c.lixeira) || 
-                          (aba==='I' && c.impresso && !c.lixeira) || 
-                          (aba==='CC' && c.curso && !c.lixeira) ||  
-                          (aba==='SC' && !c.curso && !c.lixeira) || 
-                          (aba==='L' && c.lixeira);
-                } else {
-                    vis = !c.lixeira && (
-                        (aba==='FP' && c.paga) || (aba==='FA' && !c.paga) || 
-                        (aba==='PP' && c.pedPaga) || (aba==='PA' && !c.pedPaga)
-                    );
-                }
-                
-                if(vis) {
-                    const isEd = modoEdicao === c.cpf; 
-                    const d = document.createElement('div'); 
-                    d.className = `person-item ${aberto === c.cpf ? 'open' : ''}`;
-                    
-                    // Localize isso dentro do cards.forEach no seu render()
-                    const getF = (f) => {
-                        if (!f) return null;
-                        // Se for FileList (vindo de importação), pega o primeiro. Se for File (do upF), usa ele.
-                        return (f instanceof FileList && f.length > 0) ? f[0] : f;
-                    };
+                const getF = (f) => {
+                    if (!f) return null;
+                    return (f instanceof FileList && f.length > 0) ? f[0] : f;
+                };
 
-                    const file1 = getF(c.f1);
-                    const file2 = getF(c.f2);
+                const url1 = c.f1 ? URL.createObjectURL(getF(c.f1)) : '';
+                const url2 = c.f2 ? URL.createObjectURL(getF(c.f2)) : '';
 
-                    // Libera a memória da URL antiga antes de criar uma nova (Evita travar o navegador)
-                    const url1 = file1 ? URL.createObjectURL(file1) : '';
-                    const url2 = file2 ? URL.createObjectURL(file2) : '';
-
-
-                    d.innerHTML = `<div class="person-header" onclick="toggle('${c.cpf}')"> 
-                            <span><strong>#${idx}</strong> | ${c.nome}</span>
-                            <div style="display:flex; gap:5px">
-                                 ${url1 ? `<img src="${url1}" class="mini-photo">` : ''}
-                                 ${url2 ? `<img src="${url2}" class="mini-photo">` : ''}
-                            </div>
+                d.innerHTML = `<div class="person-header" onclick="toggle('${c.cpf}')"> 
+                        <span><strong>#${idx}</strong> | ${c.nome}</span>
+                        <div style="display:flex; gap:5px">
+                             ${url1 ? `<img src="${url1}" class="mini-photo">` : ''}
+                             ${url2 ? `<img src="${url2}" class="mini-photo">` : ''}
                         </div>
-                        <div class="person-content">
-                            <div class="grid-inputs">
-                                <input id="e-n-${c.cpf}" value="${c.nome}" ${!isEd?'disabled':''}> 
-                                <input id="e-c-${c.cpf}" value="${c.cpf}" oninput="handleCPF(this)" maxlength="14" ${!isEd?'disabled':''}>
-                                <input id="e-com-${c.cpf}" value="${c.com}" placeholder="COMUNIDADE" ${!isEd?'disabled':''}>
-                                <input id="e-p-${c.cpf}" value="${c.placa}" placeholder="PLACA" ${!isEd?'disabled':''}>
-                                <input id="e-t-${c.cpf}" value="${c.tel||''}" placeholder="TELEFONE" ${!isEd?'disabled':''}>
-                                <input id="e-g-${c.cpf}" value="${c.gps||''}" placeholder="GPS" ${!isEd?'disabled':''}>
-                                <input id="e-nis-${c.cpf}" value="${c.nis||''}" placeholder="NIS" ${!isEd?'disabled':''}>
-                                <input id="e-pn-${c.cpf}" value="${c.pedNome}" placeholder="PEDREIRO" ${!isEd?'disabled':''}>
-                                <input id="e-pc-${c.cpf}" value="${c.pedCpf}" oninput="handleCPF(this)" maxlength="14" placeholder="CPF PEDR" ${!isEd?'disabled':''}>
-                            </div>
-                            <div style="margin-top:15px; display:flex; gap:10px">
-                                ${isEd?`<button class="btn btn-green" onclick="salvarE('${c.cpf}')">SALVAR</button>`:`<button class="btn btn-cyan" onclick="ativarE('${c.cpf}')">EDITAR</button>`}
-                                <button class="btn btn-cyan" onclick="prepararImp('${c.cpf}')">IMPRIMIR</button>
-                                <button class="btn btn-red" onclick="limparF('${c.cpf}')">LIMPAR FOTOS</button>
-                                <button class="btn btn-red" onclick="statusCard('${c.cpf}','lixeira',${!c.lixeira})">${c.lixeira?'RESTAURAR':'LIXEIRA'}</button>
-                            </div>
-                            <div style="margin-top:10px">
-                                <label><input type="checkbox" onchange="statusCard('${c.cpf}','paga',this.checked)" ${c.paga?'checked':''}> FAMÍLIA PAGA</label>
-                                <label style="margin-left:15px"><input type="checkbox" onchange="statusCard('${c.cpf}','pedPaga',this.checked)" ${c.pedPaga?'checked':''}> PEDREIRO PAGO</label>
-                                <label style="margin-left:15px; font-weight: bold; color: var(--primary)"><input type="checkbox" onchange="statusCard('${c.cpf}','curso',this.checked)" ${c.curso?'checked':''}> CONCLUIU CURSO</label>
-                            </div>
-                            <div style="margin-top:15px">FOTOS: <input type="file" onchange="upF('${c.cpf}',this,'f1')"> <input type="file" onchange="upF('${c.cpf}',this,'f2')"></div>
-                        </div>`;
-                    cont.appendChild(d);
-                    idx++;
-                }
-            });
-            window.scrollTo(0, scrollPos);
-        };
-    }
+                    </div>
+                    <div class="person-content">
+                        <div class="grid-inputs">
+                            <input id="e-n-${c.cpf}" value="${c.nome}" ${!isEd?'disabled':''}> 
+                            <input id="e-c-${c.cpf}" value="${c.cpf}" oninput="handleCPF(this)" maxlength="14" ${!isEd?'disabled':''}>
+                            <input id="e-com-${c.cpf}" value="${c.com}" placeholder="COMUNIDADE" ${!isEd?'disabled':''}>
+                            <input id="e-p-${c.cpf}" value="${c.placa}" placeholder="PLACA" ${!isEd?'disabled':''}>
+                            <input id="e-t-${c.cpf}" value="${c.tel||''}" placeholder="TELEFONE" ${!isEd?'disabled':''}>
+                            <input id="e-g-${c.cpf}" value="${c.gps||''}" placeholder="GPS" ${!isEd?'disabled':''}>
+                            <input id="e-nis-${c.cpf}" value="${c.nis||''}" placeholder="NIS" ${!isEd?'disabled':''}>
+                            
+                            <!-- NOVOS CAMPOS DE DATA NO CARD -->
+                            <input id="e-dt1-${c.cpf}" value="${c.dtExtra1||''}" oninput="handleData(this)" placeholder="DATA INICIO" maxlength="10" ${!isEd?'disabled':''}>
+                            <input id="e-dt2-${c.cpf}" value="${c.dtExtra2||''}" oninput="handleData(this)" placeholder="DATA FIM" maxlength="10" ${!isEd?'disabled':''}>
+
+                            <input id="e-pn-${c.cpf}" value="${c.pedNome}" placeholder="PEDREIRO" ${!isEd?'disabled':''}>
+                            <input id="e-pc-${c.cpf}" value="${c.pedCpf}" oninput="handleCPF(this)" maxlength="14" placeholder="CPF PEDR" ${!isEd?'disabled':''}>
+                        </div>
+                        <div style="margin-top:15px; display:flex; gap:10px">
+                            ${isEd?`<button class="btn btn-green" onclick="salvarE('${c.cpf}')">SALVAR</button>`:`<button class="btn btn-cyan" onclick="ativarE('${c.cpf}')">EDITAR</button>`}
+                            <button class="btn btn-cyan" onclick="prepararImp('${c.cpf}')">IMPRIMIR</button>
+                            <button class="btn btn-red" onclick="limparF('${c.cpf}')">LIMPAR FOTOS</button>
+                            <button class="btn btn-red" onclick="statusCard('${c.cpf}','lixeira',${!c.lixeira})">${c.lixeira?'RESTAURAR':'LIXEIRA'}</button>
+                        </div>
+                        <div style="margin-top:10px">
+                            <label><input type="checkbox" onchange="statusCard('${c.cpf}','paga',this.checked)" ${c.paga?'checked':''}> FAMÍLIA PAGA</label>
+                            <label style="margin-left:15px"><input type="checkbox" onchange="statusCard('${c.cpf}','pedPaga',this.checked)" ${c.pedPaga?'checked':''}> PEDREIRO PAGO</label>
+                            <label style="margin-left:15px; font-weight: bold; color: var(--primary)"><input type="checkbox" onchange="statusCard('${c.cpf}','curso',this.checked)" ${c.curso?'checked':''}> CONCLUIU CURSO</label>
+                        </div>
+                        
+                        <!-- ÁREA DO PDF -->
+                        <div style="margin-top:10px; padding:8px; border:1px dashed #ccc; background:#f9f9f9; display:flex; align-items:center; gap:10px; border-radius:8px">
+                            <strong style="font-size:11px">PDF:</strong> 
+                            <input type="file" accept=".pdf" onchange="upPdf('${c.cpf}', this)" style="font-size:11px; width:auto">
+                            ${c.docPdf ? `<button class="btn btn-green" onclick="abrirPdf('${c.cpf}')" style="padding:4px 8px; font-size:10px">📄 VER PDF</button>` : '<span style="font-size:10px; color:#999">SEM ARQUIVO</span>'}
+                        </div>
+
+                        <div style="margin-top:15px">FOTOS: <input type="file" onchange="upF('${c.cpf}',this,'f1')"> <input type="file" onchange="upF('${c.cpf}',this,'f2')"></div>
+                    </div>`;
+                cont.appendChild(d);
+                idx++;
+            }
+        });
+        window.scrollTo(0, scrollPos);
+    };
+}
+
 
 
     
@@ -388,47 +402,57 @@
 
     function ativarE(id) { modoEdicao = id; render(); }
 
-                   function salvarE(id) {
-        const novoCpf = document.getElementById(`e-c-${id}`).value.trim();
-        const novoPedCpf = document.getElementById(`e-pc-${id}`).value.trim();
-        
-        // Valida CPF Beneficiário
-        if (!validarCPF(novoCpf)) {
-            alert("⚠️ CPF DO BENEFICIÁRIO INVÁLIDO!");
-            document.getElementById(`e-c-${id}`).focus();
-            return; 
-        }
-
-        // Valida CPF Pedreiro (se preenchido)
-        if (novoPedCpf && !validarCPF(novoPedCpf)) {
-            alert("⚠️ CPF DO PEDREIRO INVÁLIDO!");
-            document.getElementById(`e-pc-${id}`).focus();
-            return;
-        }
-
-        const tx = db.transaction("cards","readwrite"); 
-        const s = tx.objectStore("cards");
-        s.get(id).onsuccess = e => {
-            const d = e.target.result;
-            if(!d) return;
-            
-            d.nome = document.getElementById(`e-n-${id}`).value.toUpperCase().trim(); 
-            d.com = document.getElementById(`e-com-${id}`).value.toUpperCase().trim(); 
-            d.placa = document.getElementById(`e-p-${id}`).value.trim(); 
-            d.tel = document.getElementById(`e-t-${id}`).value.trim(); 
-            d.gps = document.getElementById(`e-g-${id}`).value.trim(); 
-            d.nis = document.getElementById(`e-nis-${id}`).value.trim(); // ATUALIZADO: Salva o NIS
-            d.pedNome = document.getElementById(`e-pn-${id}`).value.toUpperCase().trim(); 
-            d.pedCpf = novoPedCpf; 
-
-            if (novoCpf !== id) { s.delete(id); d.cpf = novoCpf; }
-            s.put(d); 
-            tx.oncomplete = () => { 
-                modoEdicao = null; 
-                render(); 
-            };
-        }
+        function salvarE(id) {
+    const novoCpf = document.getElementById(`e-c-${id}`).value.trim();
+    const novoPedCpf = document.getElementById(`e-pc-${id}`).value.trim();
+    
+    // Valida CPF Beneficiário
+    if (!validarCPF(novoCpf)) {
+        alert("⚠️ CPF DO BENEFICIÁRIO INVÁLIDO!");
+        document.getElementById(`e-c-${id}`).focus();
+        return; 
     }
+
+    // Valida CPF Pedreiro (se preenchido)
+    if (novoPedCpf && !validarCPF(novoPedCpf)) {
+        alert("⚠️ CPF DO PEDREIRO INVÁLIDO!");
+        document.getElementById(`e-pc-${id}`).focus();
+        return;
+    }
+
+    const tx = db.transaction("cards","readwrite"); 
+    const s = tx.objectStore("cards");
+    s.get(id).onsuccess = e => {
+        const d = e.target.result;
+        if(!d) return;
+        
+        d.nome = document.getElementById(`e-n-${id}`).value.toUpperCase().trim(); 
+        d.com = document.getElementById(`e-com-${id}`).value.toUpperCase().trim(); 
+        d.placa = document.getElementById(`e-p-${id}`).value.trim(); 
+        d.tel = document.getElementById(`e-t-${id}`).value.trim(); 
+        d.gps = document.getElementById(`e-g-${id}`).value.trim(); 
+        d.nis = document.getElementById(`e-nis-${id}`).value.trim();
+        
+        // NOVAS DATAS SALVAS AQUI:
+        d.dtExtra1 = document.getElementById(`e-dt1-${id}`).value;
+        d.dtExtra2 = document.getElementById(`e-dt2-${id}`).value;
+
+        d.pedNome = document.getElementById(`e-pn-${id}`).value.toUpperCase().trim(); 
+        d.pedCpf = novoPedCpf; 
+
+        // Se o CPF mudou, deleta o registro antigo e cria o novo (pois CPF é a chave)
+        if (novoCpf !== id) { 
+            s.delete(id); 
+            d.cpf = novoCpf; 
+        }
+        
+        s.put(d); 
+        tx.oncomplete = () => { 
+            modoEdicao = null; 
+            render(); 
+        };
+    }
+}
 
     function statusCard(id, campo, val) { 
         const tx = db.transaction("cards","readwrite"); 
@@ -474,86 +498,207 @@
     }
 
     function processarCSV() {
-        const filters = Array.from(document.querySelectorAll('.rel-f:checked')).map(cb => cb.value);
-        if(filters.length === 0) return alert("Selecione ao menos uma opção!");
+    const filters = Array.from(document.querySelectorAll('.rel-f:checked')).map(cb => cb.value);
+    if (filters.length === 0) return alert("Selecione ao menos uma opção!");
 
-        db.transaction("cards").objectStore("cards").getAll().onsuccess = e => {
-            let cards = e.target.result.filter(c => c.muni === muniAtual && !c.lixeira);
+    db.transaction("cards").objectStore("cards").getAll().onsuccess = e => {
+        let cards = e.target.result.filter(c => c.muni === muniAtual && !c.lixeira);
+        
+        let result = cards.filter(c => {
+            const temF = c.f1 && c.f2;
+            if (filters.includes('pend') && (!temF && !c.impresso)) return true;
+            if (filters.includes('foto') && (temF && !c.impresso)) return true;
+            if (filters.includes('imp') && c.impresso) return true;
+            if (filters.includes('curso_sim') && c.curso) return true;
+            if (filters.includes('curso_nao') && !c.curso) return true;
+            if (filters.includes('fin')) return true;
+            return false;
+        });
+
+        if (result.length === 0) return alert("Nenhum dado encontrado para os filtros selecionados!");
+
+        // CABEÇALHO ORDENADO: CPF -> COMUNIDADE -> NIS -> DATAS -> CURSO
+        let csv = "N#;NOME;CPF;COMUNIDADE;NIS;INICIO;FIM;CURSO;PLACA;FAMILIA PAGA;PEDREIRO PAGO;STATUS\n";
+        
+        result.forEach((c, i) => {
+            let st = c.impresso ? "IMPRESSO" : (c.f1 && c.f2 ? "FOTO OK" : "PENDENTE");
+            let cursoStatus = c.curso ? "SIM" : "NÃO";
             
-            let result = cards.filter(c => {
-                const temF = c.f1 && c.f2;
-                // Lógica de Filtros Combinados
-                if(filters.includes('pend') && (!temF && !c.impresso)) return true;
-                if(filters.includes('foto') && (temF && !c.impresso)) return true;
-                if(filters.includes('imp') && c.impresso) return true;
-                if(filters.includes('curso_sim') && c.curso) return true;
-                if(filters.includes('curso_nao') && !c.curso) return true;
-                if(filters.includes('fin')) return true;
-                return false;
-            });
-
-            if(result.length === 0) return alert("Nenhum dado encontrado para os filtros selecionados!");
-
-            // Cabeçalho atualizado com NIS e CURSO
-            let csv = "N#;NOME;CPF;NIS;CURSO;COMUNIDADE;PLACA;FAMILIA PAGA;PEDREIRO PAGO;STATUS\n";
+            // Pega as novas datas dtExtra1 e dtExtra2 salvas no card
+            let vistoria = c.dtExtra1 || "";
+            let entrega = c.dtExtra2 || "";
             
-            result.forEach((c, i) => {
-                let st = c.impresso ? "IMPRESSO" : (c.f1 && c.f2 ? "FOTO OK" : "PENDENTE");
-                let cursoStatus = c.curso ? "SIM" : "NÃO";
-                
-                csv += `${i+1};${c.nome};${c.cpf};${c.nis || ''};${cursoStatus};${c.com || ''};${c.placa || ''};${c.paga?'SIM':'NÃO'};${c.pedPaga?'SIM':'NÃO'};${st}\n`;
-            });
+            // Montagem da linha seguindo rigorosamente a ordem do cabeçalho
+            csv += `${i+1};${c.nome};${c.cpf};${c.com || ''};${c.nis || ''};${vistoria};${entrega};${cursoStatus};${c.placa || ''};${c.paga?'SIM':'NÃO'};${c.pedPaga?'SIM':'NÃO'};${st}\n`;
+        });
 
-            const blob = new Blob(["\ufeff" + csv], {type: 'text/csv;charset=utf-8;'});
-            const a = document.createElement('a'); 
-            a.href = URL.createObjectURL(blob); 
-            a.download = `SIGOF_RELATORIO_${muniAtual}.csv`; 
-            a.click();
-            fecharModal();
-        };
-    }
+        const blob = new Blob(["\ufeff" + csv], {type: 'text/csv;charset=utf-8;'});
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(blob); 
+        a.download = `SIGOF_RELATORIO_${muniAtual}.csv`; 
+        a.click();
+        
+        // Limpeza de memória e fechar modal
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        fecharModal();
+    };
+}
 
-    async function exportarBackup() {
-        const tx = db.transaction(["munis", "cards"], "readonly");
-        const munis = await new Promise(res => tx.objectStore("munis").getAll().onsuccess = e => res(e.target.result));
-        const cards = await new Promise(res => tx.objectStore("cards").getAll().onsuccess = e => res(e.target.result));
-        const processados = await Promise.all(cards.map(async c => {
-            const k = {...c};
-            const f2b = (f) => new Promise(r => { 
-                if(!f) return r(null);
-                const file = f instanceof FileList ? f[0] : f;
-                const rd = new FileReader(); rd.onload = () => r(rd.result); 
-                rd.readAsDataURL(file);
-            });
-            k.f1b = await f2b(c.f1); k.f2b = await f2b(c.f2);
-            delete k.f1; delete k.f2; return k;
-        }));
-        const blob = new Blob([JSON.stringify({munis, cards: processados})], {type: "application/json"});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = `SIGOF_BACKUP.json`; a.click();
-    }
+   function abrirOpcoesBackup() {
+    const modal = document.getElementById('previewModal');
+    const tit = document.getElementById('modalTit');
+    const cont = document.getElementById('modalContent');
+
+    tit.innerText = "ESCOLHA O TIPO DE BACKUP";
+    cont.innerHTML = `
+        <div style="display:grid; gap:10px; margin-top:15px">
+            <button class="btn btn-green" onclick="exportarBackup(true)">📦 BACKUP COMPLETO (FOTOS + PDF)</button>
+            <button class="btn btn-cyan" onclick="exportarBackup(false)">📄 BACKUP LEVE (DADOS + PDF)</button>
+        </div>`;
+    
+    // Esconde o botão de impressão caso tenha ficado aberto de outra vez
+    document.getElementById('btnConfirmarPrint').style.display = 'none';
+    
+    modal.style.display = 'block';
+}
+
+
+async function exportarBackup(comFotos) {
+    const tx = db.transaction(["munis", "cards"], "readonly");
+    const munis = await new Promise(res => tx.objectStore("munis").getAll().onsuccess = e => res(e.target.result));
+    const cards = await new Promise(res => tx.objectStore("cards").getAll().onsuccess = e => res(e.target.result));
+    
+    const processados = await Promise.all(cards.map(async c => {
+        const k = {...c};
+        
+        const toBase64 = (file) => new Promise((resolve) => {
+            if (!file) return resolve(null);
+            // Se for FileList, pega o arquivo, senão usa o Blob direto
+            const blob = (file instanceof FileList && file.length > 0) ? file[0] : file;
+            if (!(blob instanceof Blob)) return resolve(null);
+
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+        });
+
+        // PDF sempre vai (como Base64)
+        k.pdfB = await toBase64(c.docPdf);
+
+        if (comFotos) {
+            k.f1b = await toBase64(c.f1);
+            k.f2b = await toBase64(c.f2);
+        }
+
+        // Remove os binários para o JSON aceitar
+        delete k.f1; delete k.f2; delete k.docPdf;
+        return k;
+    }));
+
+    const blob = new Blob([JSON.stringify({ munis, cards: processados })], { type: "application/json" });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = comFotos ? `SIGOF_FULL.json` : `SIGOF_LEVE.json`;
+    a.click();
+    fecharModal();
+}
+
+
+async function exportarBackup(comFotos) {
+    const tx = db.transaction(["munis", "cards"], "readonly");
+    const munis = await new Promise(res => tx.objectStore("munis").getAll().onsuccess = e => res(e.target.result));
+    const cards = await new Promise(res => tx.objectStore("cards").getAll().onsuccess = e => res(e.target.result));
+    
+    const processados = await Promise.all(cards.map(async c => {
+        const k = {...c};
+        
+        // Função auxiliar para converter arquivos para Base64
+        const file2base64 = (f) => new Promise(r => { 
+            if(!f) return r(null);
+            const rd = new FileReader(); 
+            rd.onload = () => r(rd.result); 
+            rd.readAsDataURL(f instanceof FileList ? f[0] : f);
+        });
+
+        if (comFotos) {
+            k.f1b = await file2base64(c.f1);
+            k.f2b = await file2base64(c.f2);
+        }
+        
+        // PDF sempre vai no backup
+        k.pdfB = await file2base64(c.docPdf);
+
+        delete k.f1; delete k.f2; delete k.docPdf;
+        return k;
+    }));
+
+    const blob = new Blob([JSON.stringify({munis, cards: processados})], {type: "application/json"});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = comFotos ? `SIGOF_BACKUP_COMPLETO.json` : `SIGOF_BACKUP_LEVE.json`;
+    a.click();
+    fecharModal();
+}
+
 
     function importarBackup(input) {
-        if (!input.files[0]) return;
-        const reader = new FileReader();
-        reader.onload = async e => {
+    if (!input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = async e => {
+        try {
             const d = JSON.parse(e.target.result);
             const tx = db.transaction(["munis", "cards"], "readwrite");
-            d.munis.forEach(m => tx.objectStore("munis").put(m));
+            
+            // Restaura os municípios
+            if (d.munis) {
+                d.munis.forEach(m => tx.objectStore("munis").put(m));
+            }
+
+            // Restaura os cards (Beneficiários)
             d.cards.forEach(c => {
-                const b2b = (b) => {
-                    if(!b) return null;
-                    const s = atob(b.split(',')[1]); const u = new Uint8Array(s.length);
-                    for(let i=0; i<s.length; i++) u[i] = s.charCodeAt(i);
-                    return new Blob([u], {type: "image/jpeg"});
+                // Função b2b atualizada para aceitar o tipo do arquivo (imagem ou pdf)
+                const b2b = (b, type) => {
+                    if (!b) return null;
+                    try {
+                        const s = atob(b.split(',')[1]); 
+                        const u = new Uint8Array(s.length);
+                        for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+                        return new Blob([u], { type: type });
+                    } catch (err) {
+                        console.error("Erro ao converter arquivo base64", err);
+                        return null;
+                    }
                 };
-                if(c.f1b) c.f1 = b2b(c.f1b); if(c.f2b) c.f2 = b2b(c.f2b);
-                delete c.f1b; delete c.f2b; tx.objectStore("cards").put(c);
+
+                // Restaura Fotos (f1b e f2b)
+                if (c.f1b) c.f1 = b2b(c.f1b, "image/jpeg");
+                if (c.f2b) c.f2 = b2b(c.f2b, "image/jpeg");
+
+                // Restaura PDF (pdfB)
+                if (c.pdfB) c.docPdf = b2b(c.pdfB, "application/pdf");
+
+                // Limpa as versões temporárias de texto para não pesar o banco
+                delete c.f1b; 
+                delete c.f2b; 
+                delete c.pdfB;
+
+                // Salva o card atualizado no IndexedDB
+                tx.objectStore("cards").put(c);
             });
-            tx.oncomplete = () => { alert("Restauração concluída!"); location.reload(); };
-        };
-        reader.readAsText(input.files[0]);
-    }
+
+            tx.oncomplete = () => { 
+                alert("Restauração concluída com sucesso!"); 
+                location.reload(); 
+            };
+        } catch (err) {
+            console.error(err);
+            alert("Erro ao processar o arquivo de backup. Verifique se o arquivo está correto.");
+        }
+    };
+    reader.readAsText(input.files[0]);
+}
+
 
     function importarArquivo() {
         const input = document.getElementById('fImport');
@@ -723,6 +868,29 @@ function upF(id, i, campo) {
         };
     };
 }
+function upPdf(id, i) {
+    if(!i.files || i.files.length === 0) return;
+    const arquivo = i.files[0];
+    if(arquivo.type !== "application/pdf") return alert("Apenas PDF!");
+
+    const tx = db.transaction("cards", "readwrite");
+    const s = tx.objectStore("cards");
+    s.get(id).onsuccess = e => {
+        const d = e.target.result;
+        d.docPdf = arquivo;
+        s.put(d);
+        tx.oncomplete = () => { alert("PDF Salvo!"); render(); };
+    };
+}
+
+function abrirPdf(id) {
+    db.transaction("cards").objectStore("cards").get(id).onsuccess = e => {
+        const d = e.target.result;
+        if(!d.docPdf) return alert("Sem PDF!");
+        window.open(URL.createObjectURL(d.docPdf), "_blank");
+    };
+}
+
 </script>
 </body>
 </html>
