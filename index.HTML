@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>SIGOF - SISTEMA INTEGRADO OFFLINE</title>
+    <H6>© V 2.3 | POWER BI ACACIO GAMA</H6>
     <style>
         :root { 
             --bg: #f0f2f5; --panel: #ffffff; --text: #1c1e21; 
@@ -34,6 +35,14 @@
          #previewModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; overflow-y: auto; }
         .modal-body { width: 90%; max-width: 700px; margin: 50px auto; background: var(--panel); padding: 30px; border-radius: 12px; text-align: center; }
         .filter-options { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; background: #eee; padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #000; }
+        .tag-container { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
+        .tag { font-size: 9px; padding: 2px 8px; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .tag.inactive { background: #ddd !important; color: #888; }
+        .tag-gps { background: #00bcd4; } /* Ciano */
+        .tag-sist { background: #2e7d32; } /* Verde */
+        .tag-const { background: #00008b; } /* Azul Escuro */
+        .tag-nis { background: #d32f2f; } /* Vermelho */
+        .tag-falta-gps { background: #ffeb3b; color: #000 !important; } /* Amarelo */
     </style>
 </head>
 <body>
@@ -41,7 +50,7 @@
 <div id="telaMunicipios">
     <div class="container" style="text-align: center; padding-top: 50px;">
         <h1 style="font-size: 4em; color: var(--primary); margin: 0;">SIGOF</h1>
-        <p style="letter-spacing: 3px; font-weight: bold; opacity: 0.6;">VERSÃO OFICIAL</p>
+        <p style="letter-spacing: 3px; font-weight: bold; opacity: 0.6;">SISTEMA INTEGRADO OFFLINE</p>
         <div class="panel" style="max-width: 600px; margin: 30px auto;">
             <input type="text" id="novoMun" placeholder="NOME DO NOVO MUNICÍPIO..." style="text-align: center; margin-bottom: 15px;">
             <button class="btn btn-green" style="width: 100%;" onclick="criarM()">ADICIONAR MUNICÍPIO</button>
@@ -97,10 +106,15 @@
             <div class="search-box">
                 <input type="text" id="inputBusca" placeholder="🔍 PESQUISAR POR NOME, CPF, PLACA OU COMUNIDADE..." oninput="render()">
             </div>
-
+            <div style="display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;">
+                <button class="btn" style="background:#00008b; font-size:9px" onclick="document.getElementById('inputBusca').value='CONSTRUIDA'; render();">🔍CONSTRUÍDAS</button>
+                <button class="btn" style="background:#d32f2f; font-size:9px" onclick="document.getElementById('inputBusca').value='SEM NIS'; render();">🔍 SEM NIS</button>
+                <button class="btn" style="background:#ffeb3b; color:#000; font-size:9px" onclick="document.getElementById('inputBusca').value='SEM GPS'; render();">🔍 SEM GPS</button>
+                <button class="btn" style="background:#ccc; color:#000; font-size:9px" onclick="document.getElementById('inputBusca').value=''; render();">LIMPAR</button>
+            </div>
             <div id="abasFisico" class="tabs">
                 <button class="tab-btn active" id="tabG" onclick="setTab('G')">GERAL <span class="count-badge" id="cG">0</span></button>
-                <button class="tab-btn" id="tabP" onclick="setTab('P')">PENDENTES <span class="count-badge" id="cP">0</span></button>
+                <button class="tab-btn" id="tabP" onclick="setTab('P')">SEM FOTO <span class="count-badge" id="cP">0</span></button>
                 <button class="tab-btn" id="tabF" onclick="setTab('F')">COM FOTOS <span class="count-badge" id="cF">0</span></button>
                 <button class="tab-btn" id="tabI" onclick="setTab('I')">IMPRESSOS <span class="count-badge" id="cI">0</span></button>
                 <button class="tab-btn" id="tabCC" onclick="setTab('CC')">COM CURSO <span class="count-badge" id="cCC">0</span></button>
@@ -255,8 +269,7 @@
 
 
 
-
-        function render() {
+function render() {
     document.getElementById('btnEsvaziarLixeira').style.display = (aba === 'L' && !vistaFin) ? 'inline-flex' : 'none';   
     const scrollPos = window.pageYOffset || document.documentElement.scrollTop;
     const cont = document.getElementById('lista'); 
@@ -268,12 +281,21 @@
         let cards = e.target.result.filter(c => c.muni === muniAtual);
         
         if (busca) {
-            cards = cards.filter(c => 
-                (c.nome && c.nome.toUpperCase().includes(busca)) || 
-                (c.cpf && c.cpf.includes(busca)) || 
-                (c.com && c.com.toUpperCase().includes(busca)) || 
-                (c.placa && c.placa.toUpperCase().includes(busca))
-            );
+            cards = cards.filter(c => {
+                const textoMatch = (c.nome && c.nome.toUpperCase().includes(busca)) || 
+                                   (c.cpf && c.cpf.includes(busca)) || 
+                                   (c.com && c.com.toUpperCase().includes(busca)) || 
+                                   (c.placa && c.placa.toUpperCase().includes(busca));
+
+                // Busca por Etiquetas (Voltando para SEM GPS)
+                const tagsMatch = (c.tags?.gps && "GPS OK".includes(busca)) ||
+                                  (c.tags?.sist && "SISTEMATIZADO".includes(busca)) ||
+                                  (c.tags?.const && "CONSTRUIDA".includes(busca)) ||
+                                  (c.tags?.nis && "NIS OK".includes(busca)) ||
+                                  (c.tags?.semGps && "SEM GPS".includes(busca));
+
+                return textoMatch || tagsMatch;
+            });
         }
 
         // Atualização dos Contadores
@@ -284,10 +306,6 @@
         document.getElementById('cCC').innerText = cards.filter(c => c.curso && !c.lixeira).length; 
         document.getElementById('cSC').innerText = cards.filter(c => !c.curso && !c.lixeira).length; 
         document.getElementById('cL').innerText = cards.filter(c => c.lixeira).length;
-        document.getElementById('cFP').innerText = cards.filter(c => c.paga && !c.lixeira).length;
-        document.getElementById('cFA').innerText = cards.filter(c => !c.paga && !c.lixeira).length;
-        document.getElementById('cPP').innerText = cards.filter(c => c.pedPaga && !c.lixeira).length;
-        document.getElementById('cPA').innerText = cards.filter(c => !c.pedPaga && !c.lixeira).length;
 
         cards.sort((a,b) => (ord === 'timestamp') ? a.timestamp - b.timestamp : (a[ord]||"").toString().localeCompare((b[ord]||"").toString()));
 
@@ -297,18 +315,11 @@
             let vis = false;
             
             if(!vistaFin) {
-                vis = (aba==='G' && !c.lixeira) || 
-                      (aba==='P' && !temF && !c.impresso && !c.lixeira) || 
-                      (aba==='F' && temF && !c.impresso && !c.lixeira) || 
-                      (aba==='I' && c.impresso && !c.lixeira) || 
-                      (aba==='CC' && c.curso && !c.lixeira) ||  
-                      (aba==='SC' && !c.curso && !c.lixeira) || 
-                      (aba==='L' && c.lixeira);
+                vis = (aba==='G' && !c.lixeira) || (aba==='P' && !temF && !c.impresso && !c.lixeira) || 
+                      (aba==='F' && temF && !c.impresso && !c.lixeira) || (aba==='I' && c.impresso && !c.lixeira) || 
+                      (aba==='CC' && c.curso && !c.lixeira) || (aba==='SC' && !c.curso && !c.lixeira) || (aba==='L' && c.lixeira);
             } else {
-                vis = !c.lixeira && (
-                    (aba==='FP' && c.paga) || (aba==='FA' && !c.paga) || 
-                    (aba==='PP' && c.pedPaga) || (aba==='PA' && !c.pedPaga)
-                );
+                vis = !c.lixeira && ((aba==='FP' && c.paga) || (aba==='FA' && !c.paga) || (aba==='PP' && c.pedPaga) || (aba==='PA' && !c.pedPaga));
             }
             
             if(vis) {
@@ -316,22 +327,39 @@
                 const d = document.createElement('div'); 
                 d.className = `person-item ${aberto === c.cpf ? 'open' : ''}`;
                 
-                const getF = (f) => {
-                    if (!f) return null;
-                    return (f instanceof FileList && f.length > 0) ? f[0] : f;
-                };
-
+                const getF = (f) => (f instanceof FileList && f.length > 0) ? f : f;
                 const url1 = c.f1 ? URL.createObjectURL(getF(c.f1)) : '';
                 const url2 = c.f2 ? URL.createObjectURL(getF(c.f2)) : '';
 
                 d.innerHTML = `<div class="person-header" onclick="toggle('${c.cpf}')"> 
-                        <span><strong>#${idx}</strong> | ${c.nome}</span>
+                        <div style="display:flex; flex-direction:column; gap:4px">
+                            <span><strong>#${idx}</strong> | ${c.nome}</span>
+                            <div class="tag-container">
+                                ${c.tags?.gps ? '<span class="tag tag-gps">GPS OK</span>' : ''}
+                                ${c.tags?.sist ? '<span class="tag tag-sist">SISTEMATIZADO</span>' : ''}
+                                ${c.tags?.const ? '<span class="tag tag-const">CONSTRUÍDA</span>' : ''}
+                                ${c.tags?.nis ? '<span class="tag tag-nis">NIS OK</span>' : ''}
+                                ${c.tags?.semGps ? '<span class="tag tag-falta-gps">SEM GPS</span>' : ''}
+                            </div>
+                        </div>
                         <div style="display:flex; gap:5px">
                              ${url1 ? `<img src="${url1}" class="mini-photo">` : ''}
                              ${url2 ? `<img src="${url2}" class="mini-photo">` : ''}
                         </div>
                     </div>
                     <div class="person-content">
+                        <!-- GERENCIADOR DE ETIQUETAS MANUAIS -->
+                        <div style="margin-bottom:15px; padding:10px; background:#f0f2f5; border-radius:8px; border:1px solid #ddd">
+                            <strong style="font-size:11px; display:block; margin-bottom:8px; color:#555">ETIQUETAS:</strong>
+                            <div class="tag-container">
+                                <span class="tag tag-gps ${!c.tags?.gps?'inactive':''}" onclick="event.stopPropagation(); toggleTag('${c.cpf}','gps')">GPS OK</span>
+                                <span class="tag tag-sist ${!c.tags?.sist?'inactive':''}" onclick="event.stopPropagation(); toggleTag('${c.cpf}','sist')">SISTEMATIZADO</span>
+                                <span class="tag tag-const ${!c.tags?.const?'inactive':''}" onclick="event.stopPropagation(); toggleTag('${c.cpf}','const')">CONSTRUÍDA</span>
+                                <span class="tag tag-nis ${!c.tags?.nis?'inactive':''}" onclick="event.stopPropagation(); toggleTag('${c.cpf}','nis')">NIS OK</span>
+                                <span class="tag tag-falta-gps ${!c.tags?.semGps?'inactive':''}" onclick="event.stopPropagation(); toggleTag('${c.cpf}','semGps')">SEM GPS</span>
+                            </div>
+                        </div>
+
                         <div class="grid-inputs">
                             <input id="e-n-${c.cpf}" value="${c.nome}" ${!isEd?'disabled':''}> 
                             <input id="e-c-${c.cpf}" value="${c.cpf}" oninput="handleCPF(this)" maxlength="14" ${!isEd?'disabled':''}>
@@ -340,14 +368,12 @@
                             <input id="e-t-${c.cpf}" value="${c.tel||''}" placeholder="TELEFONE" ${!isEd?'disabled':''}>
                             <input id="e-g-${c.cpf}" value="${c.gps||''}" placeholder="GPS" ${!isEd?'disabled':''}>
                             <input id="e-nis-${c.cpf}" value="${c.nis||''}" placeholder="NIS" ${!isEd?'disabled':''}>
-                            
-                            <!-- NOVOS CAMPOS DE DATA NO CARD -->
                             <input id="e-dt1-${c.cpf}" value="${c.dtExtra1||''}" oninput="handleData(this)" placeholder="DATA INICIO" maxlength="10" ${!isEd?'disabled':''}>
                             <input id="e-dt2-${c.cpf}" value="${c.dtExtra2||''}" oninput="handleData(this)" placeholder="DATA FIM" maxlength="10" ${!isEd?'disabled':''}>
-
                             <input id="e-pn-${c.cpf}" value="${c.pedNome}" placeholder="PEDREIRO" ${!isEd?'disabled':''}>
                             <input id="e-pc-${c.cpf}" value="${c.pedCpf}" oninput="handleCPF(this)" maxlength="14" placeholder="CPF PEDR" ${!isEd?'disabled':''}>
                         </div>
+
                         <div style="margin-top:15px; display:flex; gap:10px">
                             ${isEd?`<button class="btn btn-green" onclick="salvarE('${c.cpf}')">SALVAR</button>`:`<button class="btn btn-cyan" onclick="ativarE('${c.cpf}')">EDITAR</button>`}
                             <button class="btn btn-cyan" onclick="prepararImp('${c.cpf}')">IMPRIMIR</button>
@@ -360,13 +386,11 @@
                             <label style="margin-left:15px; font-weight: bold; color: var(--primary)"><input type="checkbox" onchange="statusCard('${c.cpf}','curso',this.checked)" ${c.curso?'checked':''}> CONCLUIU CURSO</label>
                         </div>
                         
-                        <!-- ÁREA DO PDF -->
                         <div style="margin-top:10px; padding:8px; border:1px dashed #ccc; background:#f9f9f9; display:flex; align-items:center; gap:10px; border-radius:8px">
                             <strong style="font-size:11px">PDF:</strong> 
                             <input type="file" accept=".pdf" onchange="upPdf('${c.cpf}', this)" style="font-size:11px; width:auto">
                             ${c.docPdf ? `<button class="btn btn-green" onclick="abrirPdf('${c.cpf}')" style="padding:4px 8px; font-size:10px">📄 VER PDF</button>` : '<span style="font-size:10px; color:#999">SEM ARQUIVO</span>'}
                         </div>
-
                         <div style="margin-top:15px">FOTOS: <input type="file" onchange="upF('${c.cpf}',this,'f1')"> <input type="file" onchange="upF('${c.cpf}',this,'f2')"></div>
                     </div>`;
                 cont.appendChild(d);
@@ -376,10 +400,7 @@
         window.scrollTo(0, scrollPos);
     };
 }
-
-
-
-    
+ 
     function prepararImp(cpf) {
         document.getElementById('modalTit').innerText = "OPÇÕES DE IMPRESSÃO";
         document.getElementById('modalContent').innerHTML = `
@@ -485,12 +506,12 @@
         document.getElementById('modalTit').innerText = "EXPORTAR RELATÓRIO CSV";
         document.getElementById('modalContent').innerHTML = `
             <div class="filter-options">
-                <label><input type="checkbox" class="rel-f" value="pend"> PENDENTES</label>
+                <label><input type="checkbox" class="rel-f" value="pend"> SEM FOTO</label>
                 <label><input type="checkbox" class="rel-f" value="foto"> COM FOTO</label>
                 <label><input type="checkbox" class="rel-f" value="imp"> IMPRESSO</label>
                 <label><input type="checkbox" class="rel-f" value="curso_sim"> COM CURSO</label>
                 <label><input type="checkbox" class="rel-f" value="curso_nao"> SEM CURSO</label>
-                <label><input type="checkbox" class="rel-f" value="fin"> FINANCEIRO</label>
+                <label><input type="checkbox" class="rel-f" value="fin"> GERAL</label>
             </div>
             <button class="btn btn-green" style="width:100%; margin-top:10px" onclick="processarCSV()">GERAR RELATÓRIO</button>
         `;
@@ -515,21 +536,27 @@
             return false;
         });
 
-        if (result.length === 0) return alert("Nenhum dado encontrado para os filtros selecionados!");
+        if (result.length === 0) return alert("Nenhum dado encontrado!");
 
-        // CABEÇALHO ORDENADO: CPF -> COMUNIDADE -> NIS -> DATAS -> CURSO
-        let csv = "N#;NOME;CPF;COMUNIDADE;NIS;INICIO;FIM;CURSO;PLACA;FAMILIA PAGA;PEDREIRO PAGO;STATUS\n";
+        let csv = "N#;NOME;CPF;COMUNIDADE;NIS;VISTORIA;ENTREGA;CURSO;PLACA;GPS;ETIQUETAS;FAMILIA PAGA;PEDREIRO PAGO;STATUS\n";
         
         result.forEach((c, i) => {
             let st = c.impresso ? "IMPRESSO" : (c.f1 && c.f2 ? "FOTO OK" : "PENDENTE");
-            let cursoStatus = c.curso ? "SIM" : "NÃO";
             
-            // Pega as novas datas dtExtra1 e dtExtra2 salvas no card
+            // Lógica de Etiquetas atualizada para SEM GPS
+            let tagsAtivas = [];
+            if (c.tags?.gps) tagsAtivas.push("GPS OK");
+            if (c.tags?.sist) tagsAtivas.push("SISTEMATIZADO");
+            if (c.tags?.const) tagsAtivas.push("CONSTRUIDA");
+            if (c.tags?.nis) tagsAtivas.push("NIS OK");
+            if (c.tags?.semGps) tagsAtivas.push("SEM GPS"); // Corrigido de 'alerta' para 'semGps'
+            
+            let etiquetaTexto = tagsAtivas.join(" | ");
+
             let vistoria = c.dtExtra1 || "";
             let entrega = c.dtExtra2 || "";
             
-            // Montagem da linha seguindo rigorosamente a ordem do cabeçalho
-            csv += `${i+1};${c.nome};${c.cpf};${c.com || ''};${c.nis || ''};${vistoria};${entrega};${cursoStatus};${c.placa || ''};${c.paga?'SIM':'NÃO'};${c.pedPaga?'SIM':'NÃO'};${st}\n`;
+            csv += `${i+1};${c.nome};${c.cpf};${c.com || ''};${c.nis || ''};${vistoria};${entrega};${c.curso?'SIM':'NÃO'};${c.placa || ''};${c.gps || ''};${etiquetaTexto};${c.paga?'SIM':'NÃO'};${c.pedPaga?'SIM':'NÃO'};${st}\n`;
         });
 
         const blob = new Blob(["\ufeff" + csv], {type: 'text/csv;charset=utf-8;'});
@@ -538,7 +565,6 @@
         a.download = `SIGOF_RELATORIO_${muniAtual}.csv`; 
         a.click();
         
-        // Limpeza de memória e fechar modal
         setTimeout(() => URL.revokeObjectURL(a.href), 1000);
         fecharModal();
     };
@@ -799,7 +825,7 @@ async function exportarBackup(comFotos) {
         let css = (tipo === 'SIGA') 
             ? `.page { width: 210mm; height: 297mm; position: relative; page-break-after: always; } 
                .img-card { width: 15cm; height: 10cm; position: absolute; left: 50%; transform: translateX(-50%); border: 1px solid #000; object-fit: cover; }
-               .pos-final { bottom: 2cm; } 
+               .pos-final { bottom: 4cm; } 
                .pos-topo { top: 4cm; }` // <--- ALTERADO PARA 4CM
             : `.page { width: 210mm; height: 297mm; position: relative; } 
                .img-card { width: 12cm; height: 9cm; position: absolute; left: 50%; transform: translateX(-50%); border: 1px solid #000; object-fit: cover; }
@@ -891,11 +917,20 @@ function abrirPdf(id) {
     };
 }
 
+function toggleTag(id, tagNome) {
+    const tx = db.transaction("cards", "readwrite");
+    const s = tx.objectStore("cards");
+    s.get(id).onsuccess = e => {
+        const d = e.target.result;
+        if (!d) return;
+        if (!d.tags) d.tags = {};
+        d.tags[tagNome] = !d.tags[tagNome];
+        s.put(d);
+        tx.oncomplete = () => render();
+    };
+}
+
 </script>
 </body>
 
 </html>
-
-
-
-
