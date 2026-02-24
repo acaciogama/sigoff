@@ -60,6 +60,14 @@
                 <input type="file" id="fB" style="display:none" onchange="importarBackup(this)">
             </div>
         </div>
+        <div class="panel" style="max-width: 600px; margin: 10px auto; border: 2px solid var(--secondary);">
+    <h3 style="margin-top:0; color: var(--secondary);">🔍 BUSCA GLOBAL (TODOS OS MUNICÍPIOS)</h3>
+    <div style="display: flex; gap: 10px;">
+        <input type="text" id="inputBuscaGlobal" placeholder="NOME, CPF, PLACA OU COMUNIDADE..." style="text-align: center;">
+        <button class="btn btn-cyan" onclick="executarBuscaGlobal()">PESQUISAR</button>
+    </div>
+    <div id="resultadosBuscaGlobal" style="margin-top: 15px; text-align: left; max-height: 300px; overflow-y: auto;"></div>
+    </div>
         <div id="gridMun" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;"></div>
     </div>
 </div>
@@ -929,7 +937,67 @@ function toggleTag(id, tagNome) {
         tx.oncomplete = () => render();
     };
 }
+function executarBuscaGlobal() {
+    const termo = document.getElementById('inputBuscaGlobal').value.toUpperCase().trim();
+    const container = document.getElementById('resultadosBuscaGlobal');
+    
+    if (!termo) {
+        container.innerHTML = "<small>Digite algo para pesquisar.</small>";
+        return;
+    }
 
+    container.innerHTML = "Searching...";
+
+    const tx = db.transaction("cards", "readonly");
+    const store = tx.objectStore("cards");
+
+    store.getAll().onsuccess = (e) => {
+        const todosOsCards = e.target.result;
+        
+        // Filtra em todos os municípios ao mesmo tempo
+        const resultados = todosOsCards.filter(c => {
+            return (c.nome && c.nome.includes(termo)) || 
+                   (c.cpf && c.cpf.includes(termo)) || 
+                   (c.com && c.com.includes(termo)) || 
+                   (c.placa && c.placa.includes(termo));
+        });
+
+        exibirResultadosGlobais(resultados);
+    };
+}
+
+function exibirResultadosGlobais(resultados) {
+    const container = document.getElementById('resultadosBuscaGlobal');
+    container.innerHTML = "";
+
+    if (resultados.length === 0) {
+        container.innerHTML = "<p style='font-size:12px; color:red;'>Nenhum registro encontrado em nenhum município.</p>";
+        return;
+    }
+
+    resultados.forEach(res => {
+        const item = document.createElement('div');
+        item.style = "padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; margin-bottom: 5px; border-radius: 4px;";
+        item.innerHTML = `
+            <div>
+                <strong style="font-size:13px; color:var(--primary);">${res.nome}</strong><br>
+                <small>📍 Município: <b>${res.muni}</b> | CPF: ${res.cpf}</small>
+            </div>
+            <button class="btn btn-green" style="padding: 5px; font-size: 9px;" onclick="irParaCardGlobal('${res.muni}', '${res.cpf}')">VER</button>
+        `;
+        container.appendChild(item);
+    });
+}
+
+// Função para saltar direto para o município e abrir o card da pessoa
+function irParaCardGlobal(muni, cpf) {
+    abrirM(muni); // Usa sua função existente para abrir a tela do município
+    setTimeout(() => {
+        aberto = cpf; // Define que este card deve estar aberto
+        document.getElementById('inputBusca').value = cpf; // Filtra por CPF para isolar o resultado
+        render(); // Renderiza a tela
+    }, 200);
+}
 </script>
 </body>
 
